@@ -25,9 +25,9 @@ class App {
 
     const camera: ArcRotateCamera = new ArcRotateCamera(
       "Camera",
-      Math.PI / 2,
-      Math.PI / 2,
-      2,
+      Math.PI / 4,
+      Math.PI / 4,
+      3,
       Vector3.Zero(),
       scene
     );
@@ -37,11 +37,12 @@ class App {
       new Vector3(1, 1, 0),
       scene
     );
-    const sphere: Mesh = MeshBuilder.CreateSphere(
-      "sphere",
-      { diameter: 1 },
-      scene
-    );
+    // const sphere: Mesh = MeshBuilder.CreateSphere(
+    //   "sphere",
+    //   { diameter: 1 },
+    //   scene
+    // );
+    const cube: Mesh = MeshBuilder.CreateBox("box", { size: 1 }, scene);
 
     // hide/show the Inspector
     window.addEventListener("keydown", (ev) => {
