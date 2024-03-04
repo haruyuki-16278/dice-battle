@@ -4,13 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite & pnpm tailwindcss -i ./src/css/style.css -o public/style.css --watch",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
   "devDependencies": {
     "@babylonjs/core": "^6.45.1",
     "@babylonjs/inspector": "^6.45.1",
+    "tailwindcss": "^3.4.1",
     "typescript": "^5.2.2",
     "vite": "^5.1.4"
   }
