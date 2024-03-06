@@ -11,6 +11,7 @@
   "devDependencies": {
     "@babylonjs/core": "^6.45.1",
     "@babylonjs/inspector": "^6.45.1",
+    "@types/w3c-generic-sensor": "^1.0.9",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.2.2",
     "vite": "^5.1.4"

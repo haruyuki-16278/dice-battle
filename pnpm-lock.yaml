@@ -11,6 +11,9 @@ devDependencies:
   '@babylonjs/inspector':
     specifier: ^6.45.1
     version: 6.45.1(@babylonjs/core@6.45.1)(@babylonjs/gui-editor@6.45.1)(@babylonjs/gui@6.45.1)(@babylonjs/loaders@6.45.1)(@babylonjs/materials@6.45.1)(@babylonjs/serializers@6.45.1)(@types/react-dom@18.2.19)(@types/react@18.2.61)
+  '@types/w3c-generic-sensor':
+    specifier: ^1.0.9
+    version: 1.0.9
   tailwindcss:
     specifier: ^3.4.1
     version: 3.4.1
@@ -542,6 +545,12 @@ packages:
 
   /@types/scheduler@0.16.8:
     resolution: {integrity: sha512-WZLiwShhwLRmeV6zH+GkbOFT6Z6VklCItrDioxUnv+u4Ll+8vKeFySoFyK/0ctcRpOmwAicELfmys1sDc/Rw+A==}
+    dev: true
+
+  /@types/w3c-generic-sensor@1.0.9:
+    resolution: {integrity: sha512-1nj7Pja/MJI2iqWchqLLn+ItbHh3cOV/DmGydlUm6or0AbbY2Jx9bnsh34WOFG7wfEbJ/WLa4NBBOPA///VObg==}
+    dependencies:
+      typescript: 2.9.2
     dev: true
 
   /ansi-regex@5.0.1:
@@ -1209,6 +1218,12 @@ packages:
 
   /ts-interface-checker@0.1.13:
     resolution: {integrity: sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==}
+    dev: true
+
+  /typescript@2.9.2:
+    resolution: {integrity: sha512-Gr4p6nFNaoufRIY4NMdpQRNmgxVIGMs4Fcu/ujdYk3nAZqk7supzBE9idmvfZIlH/Cuj//dvi+019qEue9lV0w==}
+    engines: {node: '>=4.2.0'}
+    hasBin: true
     dev: true
 
   /typescript@5.3.3:
