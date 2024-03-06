@@ -37,11 +37,6 @@ class App {
       new Vector3(1, 1, 0),
       scene
     );
-    // const sphere: Mesh = MeshBuilder.CreateSphere(
-    //   "sphere",
-    //   { diameter: 1 },
-    //   scene
-    // );
     const cube: Mesh = MeshBuilder.CreateBox("box", { size: 1 }, scene);
 
     // hide/show the Inspector
