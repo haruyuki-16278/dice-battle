@@ -40,19 +40,21 @@ class App {
       scene
     );
     const cube: Mesh = MeshBuilder.CreateBox("box", { size: 1 }, scene);
+    cube.position = new Vector3(0, 2, 0);
+    const ground: Mesh = MeshBuilder.CreateGround(
+      "ground",
+      { width: 10, height: 10 },
+      scene
+    );
 
     window.addEventListener("deviceorientation", (ev) => {
       let x = ev.beta;
       let y = ev.gamma;
 
-      // if (Math.abs(x) > 90) {
-      //   x = x > 0 ? 90 : -90;
-      // }
-
       console.log(x / 180, y / 180);
 
-      cube.rotate(new Vector3(1, 0, 0), ((this.px - x) / 180) * Math.PI);
-      cube.rotate(new Vector3(0, 1, 0), ((this.py - y) / 180) * Math.PI);
+      ground.rotate(new Vector3(1, 0, 0), ((this.px - x) / 180) * Math.PI);
+      ground.rotate(new Vector3(0, 0, 1), ((this.py - y) / 180) * Math.PI);
       this.px = x;
       this.py = y;
     });
