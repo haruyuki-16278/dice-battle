@@ -3,7 +3,6 @@ import "@babylonjs/inspector";
 import {
   Engine,
   Scene,
-  ArcRotateCamera,
   Vector3,
   HemisphericLight,
   Mesh,
@@ -13,9 +12,10 @@ import {
   PhysicsAggregate,
   PhysicsShapeType,
   StandardMaterial,
-  Color3,
-  PhysicsMotionType,
   Quaternion,
+  DynamicTexture,
+  MultiMaterial,
+  SubMesh,
 } from "@babylonjs/core";
 import HavokPhysics from "@babylonjs/havok";
 // @ts-ignore
@@ -54,19 +54,29 @@ class App {
       scene
     );
 
-    const faceColors = [];
-    faceColors[0] = Color3.Blue();
-    faceColors[1] = Color3.Red();
-    faceColors[2] = Color3.Green();
-    faceColors[3] = Color3.White();
-    faceColors[4] = Color3.Yellow();
-    faceColors[5] = Color3.Black();
-    const cube: Mesh = MeshBuilder.CreateBox(
-      "box",
-      { size: 1, faceColors: faceColors },
-      scene
-    );
-    cube.position = new Vector3(0, 10, 0);
+    const die1MultiMat = new MultiMaterial("multiMat");
+    const dieset = ["🔥", "💧", "🌱", "⛰", "⚡", "⏱"];
+    dieset.forEach((str, i) => {
+      const texture = new DynamicTexture(
+        `tex${i}`,
+        { width: 500, height: 500 },
+        scene
+      );
+      texture.drawText(str, null, null, "300px solid Arial", "blue", "white");
+      const material = new StandardMaterial(`mat${i}`, scene);
+      material.diffuseTexture = texture;
+      die1MultiMat.subMaterials.push(material);
+    });
+
+    const die1: Mesh = MeshBuilder.CreateBox("box", { size: 1 }, scene);
+    die1.material = die1MultiMat;
+    const verticesCount = die1.getTotalVertices();
+    for (let i = 0; i < die1MultiMat.subMaterials.length; i++)
+      new SubMesh(i, 0, verticesCount, i * 6, 6, die1);
+    const die2 = die1.clone("die2");
+    const die3 = die1.clone("die3");
+
+    const dice = [die1, die2, die3];
 
     const ground: Mesh = MeshBuilder.CreateBox(
       "ground",
@@ -80,8 +90,6 @@ class App {
 
       console.log(x / 180, y / 180);
 
-      // ground.rotate(new Vector3(1, 0, 0), ((this.px - x) / 180) * Math.PI);
-      // ground.rotate(new Vector3(0, 0, 1), ((this.py - y) / 180) * Math.PI);
       ground.rotationQuaternion = Quaternion.FromEulerAngles(
         (x / 180) * Math.PI,
         0,
@@ -89,14 +97,20 @@ class App {
       );
     });
 
-    const cubeAggregate = new PhysicsAggregate(
-      cube,
-      PhysicsShapeType.BOX,
-      { mass: 1, restitution: 0.2 },
-      scene
-    );
-    cubeAggregate.body.disablePreStep = false;
-    cubeAggregate.material.friction = 0.8;
+    dice.forEach((die, i) => {
+      const dieAggregate = new PhysicsAggregate(
+        die,
+        PhysicsShapeType.BOX,
+        { mass: 1, restitution: 0.2 },
+        scene
+      );
+      dieAggregate.body.disablePreStep = false;
+      dieAggregate.material.friction = 0.8;
+      die.position = new Vector3(i, 10, i);
+      die.rotate(new Vector3(1, 0, 0), Math.random() * 2 * Math.PI);
+      die.rotate(new Vector3(0, 1, 0), Math.random() * 2 * Math.PI);
+      die.rotate(new Vector3(0, 0, 1), Math.random() * 2 * Math.PI);
+    });
     const groundAggregate = new PhysicsAggregate(
       ground,
       PhysicsShapeType.BOX,
