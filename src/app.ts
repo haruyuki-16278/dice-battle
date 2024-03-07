@@ -14,6 +14,8 @@ import {
   PhysicsShapeType,
   StandardMaterial,
   Color3,
+  PhysicsMotionType,
+  Quaternion,
 } from "@babylonjs/core";
 import HavokPhysics from "@babylonjs/havok";
 // @ts-ignore
@@ -24,9 +26,6 @@ const havok = await HavokPhysics({
 });
 
 class App {
-  px: number = 0;
-  py: number = 0;
-
   constructor() {
     // create the canvas html element and attach it to the webpage
     const canvas = document.createElement("canvas");
@@ -55,29 +54,39 @@ class App {
       scene
     );
 
-    const cube: Mesh = MeshBuilder.CreateBox("box", { size: 1 }, scene);
-    const cubeMaterial = new StandardMaterial("boxMaterial", scene);
-    cubeMaterial.diffuseColor = new Color3(0.2, 0.4, 0.8);
-    cube.material = cubeMaterial;
+    const faceColors = [];
+    faceColors[0] = Color3.Blue();
+    faceColors[1] = Color3.Red();
+    faceColors[2] = Color3.Green();
+    faceColors[3] = Color3.White();
+    faceColors[4] = Color3.Yellow();
+    faceColors[5] = Color3.Black();
+    const cube: Mesh = MeshBuilder.CreateBox(
+      "box",
+      { size: 1, faceColors: faceColors },
+      scene
+    );
     cube.position = new Vector3(0, 10, 0);
 
-    const ground: Mesh = MeshBuilder.CreateGround(
+    const ground: Mesh = MeshBuilder.CreateBox(
       "ground",
-      { width: 10, height: 10 },
+      { width: 30, height: 0.5, depth: 30 },
       scene
     );
 
     window.addEventListener("deviceorientation", (ev) => {
-      let x = ev.beta;
-      let y = ev.gamma;
+      let x = -ev.beta;
+      let y = -ev.gamma;
 
       console.log(x / 180, y / 180);
 
-      ground.rotate(new Vector3(1, 0, 0), ((this.px - x) / 180) * Math.PI);
-      ground.rotate(new Vector3(0, 0, 1), ((this.py - y) / 180) * Math.PI);
-      this.px = x;
-      this.py = y;
-      console.log(this.px, this.py);
+      // ground.rotate(new Vector3(1, 0, 0), ((this.px - x) / 180) * Math.PI);
+      // ground.rotate(new Vector3(0, 0, 1), ((this.py - y) / 180) * Math.PI);
+      ground.rotationQuaternion = Quaternion.FromEulerAngles(
+        (x / 180) * Math.PI,
+        0,
+        (y / 180) * Math.PI
+      );
     });
 
     const cubeAggregate = new PhysicsAggregate(
@@ -86,12 +95,15 @@ class App {
       { mass: 1, restitution: 0.2 },
       scene
     );
+    cubeAggregate.body.disablePreStep = false;
+    cubeAggregate.material.friction = 0.8;
     const groundAggregate = new PhysicsAggregate(
       ground,
       PhysicsShapeType.BOX,
       { mass: 0 },
       scene
     );
+    groundAggregate.body.disablePreStep = false;
 
     // hide/show the Inspector
     window.addEventListener("keydown", (ev) => {
