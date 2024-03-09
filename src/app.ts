@@ -12,6 +12,7 @@ import {
   PhysicsAggregate,
   PhysicsShapeType,
   Quaternion,
+  ArcRotateCamera,
 } from "@babylonjs/core";
 import HavokPhysics from "@babylonjs/havok";
 // @ts-ignore
@@ -43,12 +44,16 @@ class App {
   constructor() {
     this.scene.enablePhysics(new Vector3(0, -9.8, 0), this.havokPlugin);
 
-    const camera: FreeCamera = new FreeCamera(
-      "camera",
-      new Vector3(5, 5, -10),
+    const camera = new ArcRotateCamera(
+      "Camera",
+      -Math.PI / 2,
+      -Math.PI / 2,
+      15,
+      Vector3.Zero(),
       this.scene
     );
-    camera.setTarget(Vector3.Zero());
+    camera.pinchToPanMaxDistance = 10;
+    // camera.setTarget(Vector3.Zero());
     camera.attachControl(this.canvas, true);
     const light1: HemisphericLight = new HemisphericLight(
       "light1",
@@ -88,7 +93,7 @@ class App {
     });
     const groundAggregate = new PhysicsAggregate(
       ground,
-      PhysicsShapeType.BOX,
+      PhysicsShapeType.MESH,
       { mass: 0 },
       this.scene
     );
