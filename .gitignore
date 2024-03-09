@@ -23,7 +23,9 @@ dist-ssr
 *.sln
 *.sw?
 
-# ignore builded css
+# ignore built css
 public/style.css
+# ignore built js
+built
 # ignore havok wasm
 assets/HavokPhysics.wasm
