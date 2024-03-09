@@ -26,6 +26,8 @@ jobs:
           version: 8.15.4
       - run: pnpm i --frozen-lockfile
       - run: pnpm build
+        env:
+          GITHUB_PAGES: true
       - name: Upload
         uses: actions/upload-pages-artifact@v1
         with:
