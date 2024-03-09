@@ -11,77 +11,55 @@ import {
   HavokPlugin,
   PhysicsAggregate,
   PhysicsShapeType,
-  StandardMaterial,
   Quaternion,
-  DynamicTexture,
-  MultiMaterial,
-  SubMesh,
 } from "@babylonjs/core";
 import HavokPhysics from "@babylonjs/havok";
 // @ts-ignore
 import havokWasmUrl from "../assets/HavokPhysics.wasm?url";
+import { DieBuilder } from "./builder/die";
 
 const havok = await HavokPhysics({
   locateFile: () => havokWasmUrl,
 });
 
 class App {
-  constructor() {
+  canvas: HTMLCanvasElement = (() => {
     // create the canvas html element and attach it to the webpage
     const canvas = document.createElement("canvas");
     canvas.style.width = "100%";
     canvas.style.height = "100%";
     canvas.id = "gameCanvas";
     document.body.appendChild(canvas);
+    return canvas;
+  })();
+  engine: Engine = new Engine(this.canvas, true);
+  scene: Scene = new Scene(this.engine);
+  havokPlugin = new HavokPlugin(true, havok);
 
-    // initialize babylon scene and engine
-    const engine = new Engine(canvas, true);
-    const scene = new Scene(engine);
+  DieBuilder = new DieBuilder(this.scene);
 
-    const havokPlugin = new HavokPlugin(true, havok);
-    scene.enablePhysics(new Vector3(0, -9.8, 0), havokPlugin);
+  constructor() {
+    this.scene.enablePhysics(new Vector3(0, -9.8, 0), this.havokPlugin);
 
     const camera: FreeCamera = new FreeCamera(
       "camera",
       new Vector3(5, 5, -10),
-      scene
+      this.scene
     );
     camera.setTarget(Vector3.Zero());
-    camera.attachControl(canvas, true);
+    camera.attachControl(this.canvas, true);
     const light1: HemisphericLight = new HemisphericLight(
       "light1",
       new Vector3(1, 1, 0),
-      scene
+      this.scene
     );
 
-    const die1MultiMat = new MultiMaterial("multiMat");
-    const dieset = ["🔥", "💧", "🌱", "⛰", "⚡", "⏱"];
-    dieset.forEach((str, i) => {
-      const texture = new DynamicTexture(
-        `tex${i}`,
-        { width: 500, height: 500 },
-        scene
-      );
-      texture.drawText(str, null, null, "300px solid Arial", "blue", "white");
-      const material = new StandardMaterial(`mat${i}`, scene);
-      material.diffuseTexture = texture;
-      die1MultiMat.subMaterials.push(material);
-    });
-
-    const die1: Mesh = MeshBuilder.CreateBox("box", { size: 1 }, scene);
-    die1.material = die1MultiMat;
-    const verticesCount = die1.getTotalVertices();
-    for (let i = 0; i < die1MultiMat.subMaterials.length; i++)
-      new SubMesh(i, 0, verticesCount, i * 6, 6, die1);
-    const die2 = die1.clone("die2");
-    const die3 = die1.clone("die3");
-
-    const dice = [die1, die2, die3];
+    const dice = this.DieBuilder.createDice(3);
 
     const ground: Mesh = MeshBuilder.CreateBox(
       "ground",
       { width: 30, height: 0.5, depth: 30 },
-      scene
+      this.scene
     );
 
     window.addEventListener("deviceorientation", (ev) => {
@@ -102,7 +80,7 @@ class App {
         die,
         PhysicsShapeType.BOX,
         { mass: 1, restitution: 0.2 },
-        scene
+        this.scene
       );
       dieAggregate.body.disablePreStep = false;
       dieAggregate.material.friction = 0.8;
@@ -115,7 +93,7 @@ class App {
       ground,
       PhysicsShapeType.BOX,
       { mass: 0 },
-      scene
+      this.scene
     );
     groundAggregate.body.disablePreStep = false;
 
@@ -123,17 +101,17 @@ class App {
     window.addEventListener("keydown", (ev) => {
       // Shift+Ctrl+Alt+I
       if (ev.shiftKey && ev.ctrlKey && ev.altKey && ev.keyCode === 73) {
-        if (scene.debugLayer.isVisible()) {
-          scene.debugLayer.hide();
+        if (this.scene.debugLayer.isVisible()) {
+          this.scene.debugLayer.hide();
         } else {
-          scene.debugLayer.show();
+          this.scene.debugLayer.show();
         }
       }
     });
 
     // run the main render loop
-    engine.runRenderLoop(() => {
-      scene.render();
+    this.engine.runRenderLoop(() => {
+      this.scene.render();
     });
   }
 }
