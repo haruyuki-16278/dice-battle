@@ -17,6 +17,7 @@ import HavokPhysics from "@babylonjs/havok";
 // @ts-ignore
 import havokWasmUrl from "../assets/HavokPhysics.wasm?url";
 import { DieBuilder } from "./builder/die";
+import { TrayBuilder } from "./builder/tray";
 
 const havok = await HavokPhysics({
   locateFile: () => havokWasmUrl,
@@ -36,7 +37,8 @@ class App {
   scene: Scene = new Scene(this.engine);
   havokPlugin = new HavokPlugin(true, havok);
 
-  DieBuilder = new DieBuilder(this.scene);
+  dieBuilder = new DieBuilder(this.scene);
+  trayBuilder = new TrayBuilder(this.scene);
 
   constructor() {
     this.scene.enablePhysics(new Vector3(0, -9.8, 0), this.havokPlugin);
@@ -54,26 +56,21 @@ class App {
       this.scene
     );
 
-    const dice = this.DieBuilder.createDice(3);
+    const dice = this.dieBuilder.createDice(3);
+    const ground: Mesh = this.trayBuilder.createTray();
 
-    const ground: Mesh = MeshBuilder.CreateBox(
-      "ground",
-      { width: 30, height: 0.5, depth: 30 },
-      this.scene
-    );
+    // window.addEventListener("deviceorientation", (ev) => {
+    //   let x = -ev.beta;
+    //   let y = -ev.gamma;
 
-    window.addEventListener("deviceorientation", (ev) => {
-      let x = -ev.beta;
-      let y = -ev.gamma;
+    //   console.log(x / 180, y / 180);
 
-      console.log(x / 180, y / 180);
-
-      ground.rotationQuaternion = Quaternion.FromEulerAngles(
-        (x / 180) * Math.PI,
-        0,
-        (y / 180) * Math.PI
-      );
-    });
+    //   ground.rotationQuaternion = Quaternion.FromEulerAngles(
+    //     (x / 180) * Math.PI,
+    //     0,
+    //     (y / 180) * Math.PI
+    //   );
+    // });
 
     dice.forEach((die, i) => {
       const dieAggregate = new PhysicsAggregate(
@@ -97,22 +94,23 @@ class App {
     );
     groundAggregate.body.disablePreStep = false;
 
-    // hide/show the Inspector
-    window.addEventListener("keydown", (ev) => {
-      // Shift+Ctrl+Alt+I
-      if (ev.shiftKey && ev.ctrlKey && ev.altKey && ev.keyCode === 73) {
-        if (this.scene.debugLayer.isVisible()) {
-          this.scene.debugLayer.hide();
-        } else {
-          this.scene.debugLayer.show();
-        }
-      }
-    });
-
+    window.addEventListener("keydown", (ev) => this.inspectorControl(ev));
     // run the main render loop
     this.engine.runRenderLoop(() => {
       this.scene.render();
     });
+  }
+
+  /** hide/show the Inspector */
+  inspectorControl(ev: KeyboardEvent) {
+    // Shift+Ctrl+Alt+I
+    if (ev.shiftKey && ev.ctrlKey && ev.altKey && ev.keyCode === 73) {
+      if (this.scene.debugLayer.isVisible()) {
+        this.scene.debugLayer.hide();
+      } else {
+        this.scene.debugLayer.show();
+      }
+    }
   }
 }
 new App();
