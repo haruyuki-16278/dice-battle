@@ -38,27 +38,14 @@ class App {
   dieBuilder = new DieBuilder(this.scene);
   trayBuilder = new TrayBuilder(this.scene);
 
+  camera: ArcRotateCamera;
+  light: HemisphericLight;
   dice: Mesh[];
   diceAggregate: PhysicsAggregate[];
 
   constructor() {
+    this.initWorld();
     this.scene.enablePhysics(new Vector3(0, -9.8, 0), this.havokPlugin);
-
-    const camera = new ArcRotateCamera(
-      "Camera",
-      -Math.PI / 2,
-      -Math.PI / 2,
-      30,
-      new Vector3(0, 3, 0),
-      this.scene
-    );
-    camera.pinchToPanMaxDistance = 10;
-    camera.attachControl(this.canvas, true);
-    const light1: HemisphericLight = new HemisphericLight(
-      "light1",
-      new Vector3(1, 1, 0),
-      this.scene
-    );
 
     this.dice = this.dieBuilder.createDice(3);
     this.diceAggregate = [];
@@ -89,7 +76,7 @@ class App {
     groundAggregate.material.friction = 5;
 
     window.addEventListener("deviceorientation", (ev) => {
-      camera.beta = (ev.beta / 180) * Math.PI;
+      this.camera.beta = (ev.beta / 180) * Math.PI;
     });
     window.addEventListener("devicemotion", (ev) =>
       this.impulseDiceFromMotion(ev)
@@ -100,6 +87,24 @@ class App {
     this.engine.runRenderLoop(() => {
       this.scene.render();
     });
+  }
+
+  initWorld() {
+    this.camera = new ArcRotateCamera(
+      "Camera",
+      -Math.PI / 2,
+      -Math.PI / 2,
+      30,
+      new Vector3(0, 3, 0),
+      this.scene
+    );
+    this.camera.pinchToPanMaxDistance = 10;
+    this.camera.attachControl(this.canvas, true);
+    this.light = new HemisphericLight(
+      "light",
+      new Vector3(1, 1, 0),
+      this.scene
+    );
   }
 
   impulseDiceFromMotion(ev: DeviceMotionEvent) {
