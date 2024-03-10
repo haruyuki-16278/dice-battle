@@ -67,7 +67,7 @@ class App {
         this.scene
       );
       dieAggregate.body.disablePreStep = false;
-      dieAggregate.material.friction = 0.8;
+      dieAggregate.material.friction = 1;
       diceAggregate.push(dieAggregate);
       die.position = new Vector3(1 - i, 6, 1 - i);
       die.rotate(new Vector3(1, 0, 0), Math.random() * 2 * Math.PI);
@@ -83,6 +83,7 @@ class App {
       this.scene
     );
     groundAggregate.body.disablePreStep = false;
+    groundAggregate.material.friction = 5;
 
     window.addEventListener("deviceorientation", (ev) => {
       let x = -ev.beta;
