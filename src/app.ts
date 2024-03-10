@@ -38,6 +38,9 @@ class App {
   dieBuilder = new DieBuilder(this.scene);
   trayBuilder = new TrayBuilder(this.scene);
 
+  dice: Mesh[];
+  diceAggregate: PhysicsAggregate[];
+
   constructor() {
     this.scene.enablePhysics(new Vector3(0, -9.8, 0), this.havokPlugin);
 
@@ -57,9 +60,9 @@ class App {
       this.scene
     );
 
-    const dice = this.dieBuilder.createDice(3);
-    const diceAggregate: PhysicsAggregate[] = [];
-    dice.forEach((die, i) => {
+    this.dice = this.dieBuilder.createDice(3);
+    this.diceAggregate = [];
+    this.dice.forEach((die, i) => {
       const dieAggregate = new PhysicsAggregate(
         die,
         PhysicsShapeType.BOX,
@@ -68,7 +71,7 @@ class App {
       );
       dieAggregate.body.disablePreStep = false;
       dieAggregate.material.friction = 1;
-      diceAggregate.push(dieAggregate);
+      this.diceAggregate.push(dieAggregate);
       die.position = new Vector3(1 - i, 6, 1 - i);
       die.rotate(new Vector3(1, 0, 0), Math.random() * 2 * Math.PI);
       die.rotate(new Vector3(0, 1, 0), Math.random() * 2 * Math.PI);
@@ -86,28 +89,29 @@ class App {
     groundAggregate.material.friction = 5;
 
     window.addEventListener("deviceorientation", (ev) => {
-      let x = -ev.beta;
-      let y = -ev.gamma;
       camera.beta = (ev.beta / 180) * Math.PI;
     });
-
-    window.addEventListener("devicemotion", (ev) => {
-      const xMagnitude = Math.round(ev.acceleration.x);
-      const yMagnitude = Math.round(ev.acceleration.y);
-      const zMagnitude = Math.round(ev.acceleration.z);
-
-      diceAggregate.forEach((dieAggregate, i) => {
-        dieAggregate.body.applyImpulse(
-          new Vector3(xMagnitude, yMagnitude, zMagnitude),
-          dice[i].position
-        );
-      });
-    });
-
+    window.addEventListener("devicemotion", (ev) =>
+      this.impulseDiceFromMotion(ev)
+    );
     window.addEventListener("keydown", (ev) => this.inspectorControl(ev));
+
     // run the main render loop
     this.engine.runRenderLoop(() => {
       this.scene.render();
+    });
+  }
+
+  impulseDiceFromMotion(ev: DeviceMotionEvent) {
+    const xMagnitude = Math.round(ev.acceleration.x);
+    const yMagnitude = Math.round(ev.acceleration.y);
+    const zMagnitude = Math.round(ev.acceleration.z);
+
+    this.diceAggregate.forEach((dieAggregate, i) => {
+      dieAggregate.body.applyImpulse(
+        new Vector3(xMagnitude, yMagnitude, zMagnitude),
+        this.dice[i].position
+      );
     });
   }
 
