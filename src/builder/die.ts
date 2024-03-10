@@ -16,7 +16,7 @@ export class DieBuilder {
 
   createDie(): Mesh {
     const dieMultiMat = new MultiMaterial("multiMat");
-    const dieset = ["🔥", "💧", "🌱", "⛰", "⚡", "⏱"];
+    const dieset = ["🔥", "💧", "🌱", "🔥", "💧", "🌱"];
     dieset.forEach((str, i) => {
       const texture = new DynamicTexture(
         `tex${i}`,
