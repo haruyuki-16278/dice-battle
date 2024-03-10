@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "postinstall": "cp ./node_modules/@babylonjs/havok/lib/esm/HavokPhysics.wasm ./assets/HavokPhysics.wasm",
-    "dev": "concurrently --names \" TW ,VITE\" -c \"bgBlue.bold,bgGreen.bold\" \"pnpm tailwindcss -i ./src/css/style.css -o built/style.css --watch\"  \"vite\"",
+    "dev": "concurrently --names \" TW ,VITE\" -c \"bgBlue.bold,bgGreen.bold\" \"pnpm tailwindcss -i ./src/css/style.css -o built/style.css --watch\"  \"vite --host\"",
     "build": "pnpm tailwindcss -i ./src/css/style.css -o built/style.css && tsc && vite build",
     "preview": "vite preview"
   },
