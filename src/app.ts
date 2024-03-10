@@ -9,9 +9,7 @@ import {
   HavokPlugin,
   PhysicsAggregate,
   PhysicsShapeType,
-  Quaternion,
   ArcRotateCamera,
-  PhysicsImpostor,
 } from "@babylonjs/core";
 import HavokPhysics from "@babylonjs/havok";
 // @ts-ignore
@@ -60,36 +58,24 @@ class App {
     );
 
     const dice = this.dieBuilder.createDice(3);
-    const ground: Mesh = this.trayBuilder.createTray();
-
-    window.addEventListener("deviceorientation", (ev) => {
-      let x = -ev.beta;
-      let y = -ev.gamma;
-
-      // console.table({
-      //   a: (ev.alpha / 180) * Math.PI,
-      //   b: ((ev.beta + 180) / 180) * Math.PI,
-      //   g: ev.gamma,
-      // });
-
-      // camera.alpha = (ev.alpha / 180) * Math.PI;
-      camera.beta = (ev.beta / 180) * Math.PI;
-    });
-
+    const diceAggregate: PhysicsAggregate[] = [];
     dice.forEach((die, i) => {
       const dieAggregate = new PhysicsAggregate(
         die,
         PhysicsShapeType.BOX,
-        { mass: 3, restitution: 0.6 },
+        { mass: 5, restitution: 0.6 },
         this.scene
       );
       dieAggregate.body.disablePreStep = false;
       dieAggregate.material.friction = 0.8;
+      diceAggregate.push(dieAggregate);
       die.position = new Vector3(1 - i, 6, 1 - i);
       die.rotate(new Vector3(1, 0, 0), Math.random() * 2 * Math.PI);
       die.rotate(new Vector3(0, 1, 0), Math.random() * 2 * Math.PI);
       die.rotate(new Vector3(0, 0, 1), Math.random() * 2 * Math.PI);
     });
+
+    const ground: Mesh = this.trayBuilder.createTray();
     const groundAggregate = new PhysicsAggregate(
       ground,
       PhysicsShapeType.MESH,
@@ -97,6 +83,25 @@ class App {
       this.scene
     );
     groundAggregate.body.disablePreStep = false;
+
+    window.addEventListener("deviceorientation", (ev) => {
+      let x = -ev.beta;
+      let y = -ev.gamma;
+      camera.beta = (ev.beta / 180) * Math.PI;
+    });
+
+    window.addEventListener("devicemotion", (ev) => {
+      const xMagnitude = Math.round(ev.acceleration.x);
+      const yMagnitude = Math.round(ev.acceleration.y);
+      const zMagnitude = Math.round(ev.acceleration.z);
+
+      diceAggregate.forEach((dieAggregate, i) => {
+        dieAggregate.body.applyImpulse(
+          new Vector3(xMagnitude, yMagnitude, zMagnitude),
+          dice[i].position
+        );
+      });
+    });
 
     window.addEventListener("keydown", (ev) => this.inspectorControl(ev));
     // run the main render loop
