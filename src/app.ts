@@ -6,13 +6,12 @@ import {
   Vector3,
   HemisphericLight,
   Mesh,
-  MeshBuilder,
-  FreeCamera,
   HavokPlugin,
   PhysicsAggregate,
   PhysicsShapeType,
   Quaternion,
   ArcRotateCamera,
+  PhysicsImpostor,
 } from "@babylonjs/core";
 import HavokPhysics from "@babylonjs/havok";
 // @ts-ignore
@@ -48,12 +47,11 @@ class App {
       "Camera",
       -Math.PI / 2,
       -Math.PI / 2,
-      15,
-      Vector3.Zero(),
+      30,
+      new Vector3(0, 3, 0),
       this.scene
     );
     camera.pinchToPanMaxDistance = 10;
-    // camera.setTarget(Vector3.Zero());
     camera.attachControl(this.canvas, true);
     const light1: HemisphericLight = new HemisphericLight(
       "light1",
@@ -64,29 +62,30 @@ class App {
     const dice = this.dieBuilder.createDice(3);
     const ground: Mesh = this.trayBuilder.createTray();
 
-    // window.addEventListener("deviceorientation", (ev) => {
-    //   let x = -ev.beta;
-    //   let y = -ev.gamma;
+    window.addEventListener("deviceorientation", (ev) => {
+      let x = -ev.beta;
+      let y = -ev.gamma;
 
-    //   console.log(x / 180, y / 180);
+      // console.table({
+      //   a: (ev.alpha / 180) * Math.PI,
+      //   b: ((ev.beta + 180) / 180) * Math.PI,
+      //   g: ev.gamma,
+      // });
 
-    //   ground.rotationQuaternion = Quaternion.FromEulerAngles(
-    //     (x / 180) * Math.PI,
-    //     0,
-    //     (y / 180) * Math.PI
-    //   );
-    // });
+      // camera.alpha = (ev.alpha / 180) * Math.PI;
+      camera.beta = (ev.beta / 180) * Math.PI;
+    });
 
     dice.forEach((die, i) => {
       const dieAggregate = new PhysicsAggregate(
         die,
         PhysicsShapeType.BOX,
-        { mass: 1, restitution: 0.2 },
+        { mass: 3, restitution: 0.6 },
         this.scene
       );
       dieAggregate.body.disablePreStep = false;
       dieAggregate.material.friction = 0.8;
-      die.position = new Vector3(i, 10, i);
+      die.position = new Vector3(1 - i, 6, 1 - i);
       die.rotate(new Vector3(1, 0, 0), Math.random() * 2 * Math.PI);
       die.rotate(new Vector3(0, 1, 0), Math.random() * 2 * Math.PI);
       die.rotate(new Vector3(0, 0, 1), Math.random() * 2 * Math.PI);
