@@ -10,7 +10,7 @@ export function createResultList(
   if (bottomPx) ul.style.bottom = `${bottomPx}px`;
   if (leftPx) ul.style.left = `${leftPx}px`;
   ul.className =
-    "absolute block w-[240px] h-[160px] p-4 text-white bg-white bg-opacity-25 text-sm rounded-xl overflow-y-auto overflow-x-hidden";
+    "absolute block w-[480px] h-[280px] p-4 text-white bg-white bg-opacity-25 text-3xl rounded-xl overflow-y-auto overflow-x-hidden";
 
   const appendLine = (text: string) => {
     const li = document.createElement("li");

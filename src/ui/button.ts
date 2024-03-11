@@ -12,6 +12,6 @@ export function createButton(
   if (bottomPx) button.style.bottom = `${bottomPx}px`;
   if (leftPx) button.style.left = `${leftPx}px`;
   button.className =
-    "absolute p-4 rounded-full bg-white disabled:bg-gray-700 transition-colors";
+    "absolute p-8 text-4xl rounded-full bg-white disabled:bg-gray-700 transition-colors";
   return button;
 }
