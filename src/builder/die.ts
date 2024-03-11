@@ -6,7 +6,11 @@ import {
   Scene,
   StandardMaterial,
   SubMesh,
+  Vector3,
 } from "@babylonjs/core";
+
+export const dieset = ["🔥", "💧", "🌱", "🔥", "💧", "🌱"];
+// export const dieset = ["1", "2", "3", "4", "5", "6"];
 
 export class DieBuilder {
   scene: Scene | undefined = undefined;
@@ -16,7 +20,6 @@ export class DieBuilder {
 
   createDie(): Mesh {
     const dieMultiMat = new MultiMaterial("multiMat");
-    const dieset = ["🔥", "💧", "🌱", "🔥", "💧", "🌱"];
     dieset.forEach((str, i) => {
       const texture = new DynamicTexture(
         `tex${i}`,
@@ -44,5 +47,18 @@ export class DieBuilder {
       dice.push(dice[0].clone(`die${i}`));
     }
     return dice;
+  }
+
+  getDieTopFromRotation(rotation: Vector3): number {
+    const diceTable =
+      rotation.x === 0
+        ? [5, 3, 6, 4]
+        : rotation.x === 90
+        ? [2, 3, 1, 4]
+        : rotation.x === 180
+        ? [6, 4, 5, 3]
+        : // rotation.x === 270
+          [1, 3, 2, 4];
+    return diceTable[Math.round(rotation.z / 90)];
   }
 }

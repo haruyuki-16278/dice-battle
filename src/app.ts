@@ -14,7 +14,7 @@ import {
 import HavokPhysics from "@babylonjs/havok";
 // @ts-ignore
 import havokWasmUrl from "../assets/HavokPhysics.wasm?url";
-import { DieBuilder } from "./builder/die";
+import { DieBuilder, dieset } from "./builder/die";
 import { TrayBuilder } from "./builder/tray";
 
 const havok = await HavokPhysics({
@@ -43,6 +43,8 @@ class App {
   dice: Mesh[];
   diceAggregate: PhysicsAggregate[];
 
+  collisionTimeout: number | undefined = undefined;
+
   constructor() {
     this.initWorld();
     this.scene.enablePhysics(new Vector3(0, -9.8, 0), this.havokPlugin);
@@ -57,6 +59,7 @@ class App {
         this.scene
       );
       dieAggregate.body.disablePreStep = false;
+      dieAggregate.body.setCollisionCallbackEnabled(true);
       dieAggregate.material.friction = 1;
       this.diceAggregate.push(dieAggregate);
       die.position = new Vector3(1 - i, 6, 1 - i);
@@ -73,7 +76,17 @@ class App {
       this.scene
     );
     groundAggregate.body.disablePreStep = false;
+    groundAggregate.body.setCollisionCallbackEnabled(true);
     groundAggregate.material.friction = 5;
+
+    this.havokPlugin.onCollisionObservable.add((ev) => {
+      if (ev.type === "COLLISION_STARTED") {
+        if (this.collisionTimeout) {
+          window.clearTimeout(this.collisionTimeout);
+        }
+        this.collisionTimeout = window.setTimeout(() => this.fixStatus(), 2000);
+      }
+    });
 
     window.addEventListener("deviceorientation", (ev) => {
       this.camera.beta = (ev.beta / 180) * Math.PI;
@@ -107,6 +120,24 @@ class App {
     );
   }
 
+  fixStatus() {
+    const faces = [];
+    this.dice.forEach((die, i) => {
+      const eulerRotation = die.rotationQuaternion.toEulerAngles();
+      const rotation = new Vector3(
+        this.roundAngleToHarfPI((eulerRotation.x * 180) / Math.PI + 180),
+        (eulerRotation.y * 180) / Math.PI + 180,
+        this.roundAngleToHarfPI((eulerRotation.z * 180) / Math.PI + 180)
+      );
+      faces.push(dieset[this.dieBuilder.getDieTopFromRotation(rotation) - 1]);
+      this.diceAggregate[i].body.setMassProperties({ mass: 0 });
+      window.removeEventListener("devicemotion", (ev) =>
+        this.impulseDiceFromMotion(ev)
+      );
+    });
+    console.log(faces);
+  }
+
   impulseDiceFromMotion(ev: DeviceMotionEvent) {
     const xMagnitude = Math.round(ev.acceleration.x);
     const yMagnitude = Math.round(ev.acceleration.y);
@@ -129,6 +160,18 @@ class App {
       } else {
         this.scene.debugLayer.show();
       }
+    }
+  }
+
+  roundAngleToHarfPI(eulerRotation: number) {
+    if (eulerRotation > 45 && eulerRotation <= 135) {
+      return 90;
+    } else if (eulerRotation > 135 && eulerRotation <= 225) {
+      return 180;
+    } else if (eulerRotation > 225 && eulerRotation <= 315) {
+      return 270;
+    } else {
+      return 0;
     }
   }
 }
