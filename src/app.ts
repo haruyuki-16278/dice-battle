@@ -19,6 +19,7 @@ import havokWasmUrl from "../assets/HavokPhysics.wasm?url";
 import { DieBuilder, dieset } from "./builder/die";
 import { TrayBuilder } from "./builder/tray";
 import { createButton } from "./ui/button";
+import { createResultList } from "./ui/result-list";
 
 const havok = await HavokPhysics({
   locateFile: () => havokWasmUrl,
@@ -42,6 +43,8 @@ class App {
   trayBuilder = new TrayBuilder(this.scene);
 
   rerollButton: HTMLButtonElement;
+  resultList: HTMLUListElement;
+  appendLineToResultList: Function;
 
   camera: ArcRotateCamera;
   light: HemisphericLight;
@@ -158,6 +161,11 @@ class App {
     document.body.appendChild(restartButton);
     restartButton.disabled = true;
     this.rerollButton = restartButton;
+
+    const resultList = createResultList(16, undefined, undefined, 16);
+    this.resultList = resultList.elem;
+    document.body.appendChild(resultList.elem);
+    this.appendLineToResultList = resultList.append;
   }
 
   fixStatus() {
@@ -176,6 +184,7 @@ class App {
       );
     });
     console.log(faces);
+    this.appendLineToResultList(`rolled: ${JSON.stringify(faces)}`);
     this.rerollButton.disabled = false;
   }
 
