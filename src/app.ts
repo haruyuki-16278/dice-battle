@@ -10,6 +10,8 @@ import {
   PhysicsAggregate,
   PhysicsShapeType,
   ArcRotateCamera,
+  IPhysicsCollisionEvent,
+  Observer,
 } from "@babylonjs/core";
 import HavokPhysics from "@babylonjs/havok";
 // @ts-ignore
@@ -43,48 +45,25 @@ class App {
   dice: Mesh[];
   diceAggregate: PhysicsAggregate[];
 
+  collisionObservable = this.havokPlugin.onCollisionObservable;
+  collisionObserver: Observer<IPhysicsCollisionEvent> = undefined;
   collisionTimeout: number | undefined = undefined;
 
   constructor() {
     this.initWorld();
     this.scene.enablePhysics(new Vector3(0, -9.8, 0), this.havokPlugin);
+    this.initTray();
+    this.initDice();
 
-    this.dice = this.dieBuilder.createDice(3);
-    this.diceAggregate = [];
-    this.dice.forEach((die, i) => {
-      const dieAggregate = new PhysicsAggregate(
-        die,
-        PhysicsShapeType.BOX,
-        { mass: 5, restitution: 0.6 },
-        this.scene
-      );
-      dieAggregate.body.disablePreStep = false;
-      dieAggregate.body.setCollisionCallbackEnabled(true);
-      dieAggregate.material.friction = 1;
-      this.diceAggregate.push(dieAggregate);
-      die.position = new Vector3(1 - i, 6, 1 - i);
-      die.rotate(new Vector3(1, 0, 0), Math.random() * 2 * Math.PI);
-      die.rotate(new Vector3(0, 1, 0), Math.random() * 2 * Math.PI);
-      die.rotate(new Vector3(0, 0, 1), Math.random() * 2 * Math.PI);
-    });
-
-    const ground: Mesh = this.trayBuilder.createTray();
-    const groundAggregate = new PhysicsAggregate(
-      ground,
-      PhysicsShapeType.MESH,
-      { mass: 0 },
-      this.scene
-    );
-    groundAggregate.body.disablePreStep = false;
-    groundAggregate.body.setCollisionCallbackEnabled(true);
-    groundAggregate.material.friction = 5;
-
-    this.havokPlugin.onCollisionObservable.add((ev) => {
+    this.collisionObserver = this.collisionObservable.add((ev) => {
       if (ev.type === "COLLISION_STARTED") {
         if (this.collisionTimeout) {
           window.clearTimeout(this.collisionTimeout);
         }
-        this.collisionTimeout = window.setTimeout(() => this.fixStatus(), 2000);
+        this.collisionTimeout = window.setTimeout(() => {
+          this.collisionObservable.remove(this.collisionObserver);
+          this.fixStatus();
+        }, 2000);
       }
     });
 
@@ -118,6 +97,40 @@ class App {
       new Vector3(1, 1, 0),
       this.scene
     );
+  }
+
+  initTray() {
+    const tray: Mesh = this.trayBuilder.createTray();
+    const trayAggregate = new PhysicsAggregate(
+      tray,
+      PhysicsShapeType.MESH,
+      { mass: 0 },
+      this.scene
+    );
+    trayAggregate.body.disablePreStep = false;
+    trayAggregate.body.setCollisionCallbackEnabled(true);
+    trayAggregate.material.friction = 5;
+  }
+
+  initDice() {
+    this.dice = this.dieBuilder.createDice(3);
+    this.diceAggregate = [];
+    this.dice.forEach((die, i) => {
+      const dieAggregate = new PhysicsAggregate(
+        die,
+        PhysicsShapeType.BOX,
+        { mass: 5, restitution: 0.6 },
+        this.scene
+      );
+      dieAggregate.body.disablePreStep = false;
+      dieAggregate.body.setCollisionCallbackEnabled(true);
+      dieAggregate.material.friction = 1;
+      this.diceAggregate.push(dieAggregate);
+      die.position = new Vector3(1 - i, 6, 1 - i);
+      die.rotate(new Vector3(1, 0, 0), Math.random() * 2 * Math.PI);
+      die.rotate(new Vector3(0, 1, 0), Math.random() * 2 * Math.PI);
+      die.rotate(new Vector3(0, 0, 1), Math.random() * 2 * Math.PI);
+    });
   }
 
   fixStatus() {
