@@ -18,6 +18,7 @@ import HavokPhysics from "@babylonjs/havok";
 import havokWasmUrl from "../assets/HavokPhysics.wasm?url";
 import { DieBuilder, dieset } from "./builder/die";
 import { TrayBuilder } from "./builder/tray";
+import { createButton } from "./ui/button";
 
 const havok = await HavokPhysics({
   locateFile: () => havokWasmUrl,
@@ -40,6 +41,8 @@ class App {
   dieBuilder = new DieBuilder(this.scene);
   trayBuilder = new TrayBuilder(this.scene);
 
+  rerollButton: HTMLButtonElement;
+
   camera: ArcRotateCamera;
   light: HemisphericLight;
   dice: Mesh[];
@@ -55,17 +58,9 @@ class App {
     this.initTray();
     this.initDice();
 
-    this.collisionObserver = this.collisionObservable.add((ev) => {
-      if (ev.type === "COLLISION_STARTED") {
-        if (this.collisionTimeout) {
-          window.clearTimeout(this.collisionTimeout);
-        }
-        this.collisionTimeout = window.setTimeout(() => {
-          this.collisionObservable.remove(this.collisionObserver);
-          this.fixStatus();
-        }, 2000);
-      }
-    });
+    this.initUis();
+
+    this.initCollisionObserver();
 
     window.addEventListener("deviceorientation", (ev) => {
       this.camera.beta = (ev.beta / 180) * Math.PI;
@@ -133,6 +128,38 @@ class App {
     });
   }
 
+  initCollisionObserver() {
+    this.collisionObserver = this.collisionObservable.add((ev) => {
+      if (ev.type === "COLLISION_STARTED") {
+        if (this.collisionTimeout) {
+          window.clearTimeout(this.collisionTimeout);
+        }
+        this.collisionTimeout = window.setTimeout(() => {
+          this.collisionObservable.remove(this.collisionObserver);
+          this.fixStatus();
+        }, 2000);
+      }
+    });
+  }
+
+  initUis() {
+    const restartButton = createButton("reroll", 16, 16, undefined, undefined);
+    restartButton.onclick = (ev: Event) => {
+      this.rerollButton.disabled = true;
+      ev.preventDefault();
+      ev.stopPropagation();
+      this.dice.forEach((die) => {
+        die.dispose();
+      });
+
+      this.initDice();
+      this.initCollisionObserver();
+    };
+    document.body.appendChild(restartButton);
+    restartButton.disabled = true;
+    this.rerollButton = restartButton;
+  }
+
   fixStatus() {
     const faces = [];
     this.dice.forEach((die, i) => {
@@ -149,6 +176,7 @@ class App {
       );
     });
     console.log(faces);
+    this.rerollButton.disabled = false;
   }
 
   impulseDiceFromMotion(ev: DeviceMotionEvent) {
