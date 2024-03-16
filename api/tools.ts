@@ -87,7 +87,7 @@ program
     // https://docs.deno.com/runtime/tutorials/subprocess
 
     const region = Deno.env.get("AWS_REGION");
-    const registry = Deno.env.get("ECR_URI");
+    const registry = Deno.env.get("ECR_REGISTRY");
     if (!region || !registry) {
       console.error("invalid region. please check dotenv.");
       Deno.exit(1);
