@@ -76,6 +76,7 @@ program
       `${dir}/Dockerfile`,
       dockerfile(handler ?? "handler")
     );
+    await Deno.symlink(".env", `${dir}/.env`);
 
     console.log("generate success!");
   });
