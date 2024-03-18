@@ -1,5 +1,6 @@
 #!/usr/bin/env -S deno run --allow-read --allow-write --allow-env --allow-run
 import "https://deno.land/std@0.191.0/dotenv/load.ts";
+import { env } from "https://deno.land/std@0.61.0/node/process.ts";
 import * as cmd from "https://deno.land/x/cmd@v1.2.0/mod.ts";
 
 const program = new cmd.Command("./tools.ts");
@@ -39,6 +40,9 @@ const dockerfile = (handlerName: string) =>
 
 COPY index.ts .
 RUN deno cache index.ts
+
+ARG aws_region
+ENV AWS_REGION=\${aws_region}
 
 CMD ["index.${handlerName}"]
 `;
@@ -116,7 +120,15 @@ program
     const imageName = `${method}-${route}-dice-battle`;
 
     const buildCommand = new Deno.Command("docker", {
-      args: ["buildx", "build", "--tag", imageName, `./${route}/${method}`],
+      args: [
+        "buildx",
+        "build",
+        "--tag",
+        imageName,
+        "--build-arg",
+        `aws_region=${region}`,
+        `./${route}/${method}`,
+      ],
     });
     const buildProcess = buildCommand.spawn();
 
