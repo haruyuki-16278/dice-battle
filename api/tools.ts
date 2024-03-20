@@ -36,15 +36,17 @@ export async function ${handlerName}(
 }
 `;
 const dockerfile = (handlerName: string) =>
-  `FROM denoland/deno-lambda:${DENO_LAMBDA_VERSION}
-
-COPY index.ts .
-RUN deno cache index.ts
-
-ARG aws_region
-ENV AWS_REGION=\${aws_region}
-
-CMD ["index.${handlerName}"]
+  `ARG aws_region
+  ARG ecr_registry
+  
+  FROM \${ecr_registry}/my-deno-lambda:latest
+  
+  ENV DENO_DIR=.deno_dir AWS_REGION=\${aws_region}
+  COPY index.ts .
+  RUN deno cache --reload index.ts
+  
+  CMD ["index.${handlerName}"]
+  
 `;
 
 program
@@ -127,6 +129,7 @@ program
         imageName,
         "--build-arg",
         `aws_region=${region}`,
+        `ecr_registry=${registry}`,
         `./${route}/${method}`,
       ],
     });
