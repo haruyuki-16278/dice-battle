@@ -35,18 +35,17 @@ export async function ${handlerName}(
   };
 }
 `;
-const dockerfile = (handlerName: string) =>
-  `ARG aws_region
-  ARG ecr_registry
-  
-  FROM \${ecr_registry}/my-deno-lambda:latest
-  
-  ENV DENO_DIR=.deno_dir AWS_REGION=\${aws_region}
-  COPY index.ts .
-  RUN deno cache --reload index.ts
-  
-  CMD ["index.${handlerName}"]
-  
+const dockerfile = (handlerName: string) => `ARG aws_region
+ARG ecr_registry
+
+FROM \${ecr_registry}/my-deno-lambda:latest
+
+ENV DENO_DIR=.deno_dir AWS_REGION=\${aws_region}
+COPY index.ts .
+RUN deno cache --reload index.ts
+
+CMD ["index.${handlerName}"]
+
 `;
 
 program
@@ -129,6 +128,7 @@ program
         imageName,
         "--build-arg",
         `aws_region=${region}`,
+        "--build-arg",
         `ecr_registry=${registry}`,
         `./${route}/${method}`,
       ],
