@@ -92,6 +92,8 @@ program
     chdirApiRoute();
     // https://docs.deno.com/runtime/tutorials/subprocess
 
+    const key = Deno.env.get("ACCESS");
+    const secret = Deno.env.get("SECRET");
     const region = Deno.env.get("AWS_REGION");
     const registry = Deno.env.get("ECR_REGISTRY");
     if (!region || !registry) {
@@ -130,6 +132,10 @@ program
         `aws_region=${region}`,
         "--build-arg",
         `ecr_registry=${registry}`,
+        "--build-arg",
+        `aws_access_key=${key}`,
+        "--build-arg",
+        `aws_secret_key=${secret}`,
         `./${route}/${method}`,
       ],
     });
