@@ -60,9 +60,12 @@ export async function handler(
         TableName: tableName,
         Item: {
           id: roomId,
-          hostPlayer: data.playerID,
           key: roomKey,
+          hostPlayer: data.playerID,
           guestPlayer: "",
+          hostRollLog: [],
+          guestRollLog: [],
+          winner: "",
         },
       })
     );
