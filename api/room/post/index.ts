@@ -1,10 +1,10 @@
 import "https://deno.land/std@0.191.0/dotenv/load.ts";
 import {
-  APIGatewayProxyEventV2,
   APIGatewayProxyResultV2,
   Context,
 } from "https://deno.land/x/lambda@1.41.1/mod.ts";
 import { DynamoDBClient } from "https://esm.sh/@aws-sdk/client-dynamodb@3.538.0";
+import { ScanCommand } from "https://esm.sh/@aws-sdk/lib-dynamodb@3.538.0";
 import { PutCommand } from "https://esm.sh/@aws-sdk/lib-dynamodb@3.538.0";
 import { DynamoDBDocumentClient } from "https://esm.sh/@aws-sdk/lib-dynamodb@3.538.0";
 
@@ -32,6 +32,27 @@ export async function handler(
   _context: Context
 ): Promise<APIGatewayProxyResultV2> {
   if ("playerID" in data) {
+    const createdRoom = await ddbDocClient.send(
+      new ScanCommand({
+        TableName: tableName,
+        FilterExpression: "hostPlayer = :g",
+        ExpressionAttributeValues: {
+          ":g": data.playerID,
+        },
+      })
+    );
+    if (createdRoom.Items && createdRoom.Items.length > 0) {
+      return {
+        statusCode: 200,
+        headers: { "content-type": "application/json;charset=utf8" },
+        body: JSON.stringify({
+          code: "S-002",
+          message: "already created",
+          roomId: createdRoom.Items[0].id,
+        }),
+      };
+    }
+
     const roomId = crypto.randomUUID();
     const roomKey = data?.roomKey ?? "";
     const result = await ddbDocClient.send(
@@ -45,7 +66,6 @@ export async function handler(
         },
       })
     );
-    console.log(result);
 
     return {
       statusCode: 200,
