@@ -37,12 +37,34 @@ const tableName = "dice-battle";
 
 // deno-lint-ignore require-await
 export async function handler(
-  data: { key: string },
+  data: { key: string; roomId: string },
   _context: Context
 ): Promise<APIGatewayProxyResultV2> {
   console.log(data);
+  if (data.roomId && data.roomId !== "") {
+    const scan = await ddbDocClient.send(
+      new ScanCommand({
+        TableName: tableName,
+        FilterExpression: "roomId = :g",
+        ExpressionAttributeValues: {
+          ":g": data.roomId,
+        },
+      })
+    );
+    return {
+      statusCode: 200,
+      headers: { "content-type": "application/json;charset=utf8" },
+      body: JSON.stringify(scan.Items),
+    };
+  }
   const scan = await ddbDocClient.send(
-    new ScanCommand({ TableName: tableName })
+    new ScanCommand({
+      TableName: tableName,
+      FilterExpression: "guestPlayer = :g",
+      ExpressionAttributeValues: {
+        ":g": "",
+      },
+    })
   );
   const items = (scan.Items as DiceBattleRoomTableColumn[]).filter((room) => {
     if (data.key !== "") return room.guestPlayer === "";
