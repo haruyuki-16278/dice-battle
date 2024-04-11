@@ -29,16 +29,16 @@ const tableName = "dice-battle";
 
 // deno-lint-ignore require-await
 export async function handler(
-  data: { roomID: string },
+  data: { roomId: string },
   _context: Context
 ): Promise<APIGatewayProxyResultV2> {
-  if (data.roomID) {
+  if (data.roomId) {
     [];
     const result = await ddbDocClient.send(
       new DeleteCommand({
         TableName: tableName,
         Key: {
-          id: data.roomID,
+          id: data.roomId,
         },
       })
     );

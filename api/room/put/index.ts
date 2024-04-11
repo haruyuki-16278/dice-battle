@@ -26,21 +26,21 @@ const tableName = "dice-battle";
 
 // deno-lint-ignore require-await
 export async function handler(
-  data: { roomID: string; playerID: string },
+  data: { roomId: string; playerId: string },
   _context: Context
 ): Promise<APIGatewayProxyResultV2> {
-  if (data.playerID && data.roomID) {
+  if (data.playerId && data.roomId) {
     const result = await ddbDocClient.send(
       new UpdateCommand({
         TableName: tableName,
         Key: {
-          id: data.roomID,
+          id: data.roomId,
         },
         ExpressionAttributeNames: {
           "#guestPlayer": "guestPlayer",
         },
         ExpressionAttributeValues: {
-          ":guestPlayer": data.playerID,
+          ":guestPlayer": data.playerId,
         },
         UpdateExpression: "set #guestPlayer = :guestPlayer",
       })

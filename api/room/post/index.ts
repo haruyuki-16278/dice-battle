@@ -28,16 +28,16 @@ const tableName = "dice-battle";
 
 // deno-lint-ignore require-await
 export async function handler(
-  data: { playerID: string; roomKey?: string },
+  data: { playerId: string; roomKey?: string },
   _context: Context
 ): Promise<APIGatewayProxyResultV2> {
-  if ("playerID" in data) {
+  if ("playerId" in data) {
     const createdRoom = await ddbDocClient.send(
       new ScanCommand({
         TableName: tableName,
         FilterExpression: "hostPlayer = :g",
         ExpressionAttributeValues: {
-          ":g": data.playerID,
+          ":g": data.playerId,
         },
       })
     );
@@ -61,7 +61,7 @@ export async function handler(
         Item: {
           id: roomId,
           key: roomKey,
-          hostPlayer: data.playerID,
+          hostPlayer: data.playerId,
           guestPlayer: "",
           hostRollLog: [],
           guestRollLog: [],

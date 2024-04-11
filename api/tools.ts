@@ -10,7 +10,7 @@ const DENO_LAMBDA_VERSION = "1.41.1";
 
 const chdirApiRoute = () => {
   if (typeof import.meta.dirname !== "string") {
-    console.error("error: invalid dirname");
+    console.error("error: invalId dirname");
     Deno.exit(1);
   }
   Deno.chdir(import.meta.dirname);
@@ -32,7 +32,7 @@ export async function ${handlerName}(
     headers: { "content-type": "application/json;charset=utf8" },
     body: JSON.stringify({
       code: "E-001",
-      message: "invalid data",
+      message: "invalId data",
     }),
   };
 }
@@ -101,7 +101,7 @@ program
     const region = Deno.env.get("AWS_REGION");
     const registry = Deno.env.get("ECR_REGISTRY");
     if (!region || !registry) {
-      console.error("invalid region. please check dotenv.");
+      console.error("invalId region. please check dotenv.");
       Deno.exit(1);
     }
 

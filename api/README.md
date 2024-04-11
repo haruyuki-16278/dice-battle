@@ -12,8 +12,7 @@ API は以下のように用意します
   - POST: ルームを作成する
   - PUT: ルームに参加する
   - DELETE: ルームを削除する
-- room?roomid=:roomid
+- room?roomId=:roomId
   - GET: ホスト中のルームの状態を取得
-- game/:roomid
-  - GET: ルームのゲーム状態を取得
-  - POST: ルームのゲーム状態の更新を投稿する
+- game
+  - PUT: ルームのゲーム状態の更新を投稿する
