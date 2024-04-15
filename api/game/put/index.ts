@@ -37,7 +37,7 @@ export async function handler(
     const currentStatus = await ddbDocClient.send(
       new ScanCommand({
         TableName: tableName,
-        FilterExpression: "Id = :g",
+        FilterExpression: "id = :g",
         ExpressionAttributeValues: {
           ":g": data.roomId,
         },
@@ -54,41 +54,87 @@ export async function handler(
       };
     }
 
-    const isHost = currentStatus.Items[0].hostPlayer === data.playerId;
-    const names = isHost
-      ? {
-          "#hostRollLog": "hostRollLog",
-        }
-      : {
-          "#guestRollLog": "guestRollLog",
-        };
-    const values = isHost
-      ? {
-          ":hostRollLog": JSON.stringify(
-            currentStatus.Items[0].hostRollLog.push(data.roll)
-          ),
-        }
-      : {
-          ":guestRollLog": JSON.stringify(
-            currentStatus.Items[0].guestRollLog.push(data.roll)
-          ),
-        };
-    const update = isHost
-      ? "set #hostRollLog = :hostRollLog"
-      : "set #guestRollLog = :guestRollLog";
-    const updateStatus = await ddbDocClient.send(
-      new UpdateCommand({
+    // console.log(JSON.stringify(currentStatus));
+    // console.log(
+    //   currentStatus.Items[0].hostRollLog,
+    //   currentStatus.Items[0].guestRollLog
+    // );
+    // const isHost = currentStatus.Items[0].hostPlayer === data.playerId;
+    // const names = isHost
+    //   ? {
+    //       "#hostRollLog": "hostRollLog",
+    //     }
+    //   : {
+    //       "#guestRollLog": "guestRollLog",
+    //     };
+    // if (isHost) currentStatus.Items[0].hostRollLog.push(data.roll);
+    // else currentStatus.Items[0].guestRollLog.push(data.roll);
+    // const values = isHost
+    //   ? {
+    //       ":hostRollLog": currentStatus.Items[0].hostRollLog,
+    //     }
+    //   : {
+    //       ":guestRollLog": currentStatus.Items[0].guestRollLog,
+    //     };
+    // const update = isHost
+    //   ? "set #hostRollLog = :hostRollLog"
+    //   : "set #guestRollLog = :guestRollLog";
+    // console.log({
+    //   TableName: tableName,
+    //   Key: {
+    //     Id: data.roomId,
+    //   },
+    //   // @ts-ignore
+    //   ExpressionAttributeNames: { ...names },
+    //   ExpressionAttributeValues: { ...values },
+    //   UpdateExpression: update,
+    // });
+    // const updateStatus = await ddbDocClient.send(
+    //   new UpdateCommand({
+    //     TableName: tableName,
+    //     Key: {
+    //       Id: data.roomId,
+    //     },
+    //     // @ts-ignore
+    //     ExpressionAttributeNames: { ...names },
+    //     ExpressionAttributeValues: [ ...values ],
+    //     UpdateExpression: update,
+    //   })
+    // );
+    let updateCommandInput = undefined;
+    if (currentStatus.Items[0].hostPlayer === data.playerId) {
+      updateCommandInput = {
         TableName: tableName,
         Key: {
           Id: data.roomId,
         },
-        // @ts-ignore
-        ExpressionAttributeNames: { ...names },
-        ExpressionAttributeValues: { ...values },
-        UpdateExpression: update,
-      })
+        ExpressionAttributeNames: {
+          "#hostRollLog": "hostRollLog",
+        },
+        ExpressionAttributeValues: {
+          ":hostRollLog": [data.roll],
+        },
+        UpdateExpression: "set #hostRollLog = :hostRollLog",
+      };
+    } else {
+      updateCommandInput = {
+        TableName: tableName,
+        Key: {
+          id: data.roomId,
+        },
+        ExpressionAttributeNames: {
+          "#guestRollLog": "guestRollLog",
+        },
+        ExpressionAttributeValues: {
+          ":guestRollLog": [data.roll],
+        },
+        UpdateExpression: "set #guestRollLog = :guestRollLog",
+      };
+    }
+    console.log(updateCommandInput);
+    const updateStatus = await ddbDocClient.send(
+      new UpdateCommand(updateCommandInput)
     );
-    console.log(updateStatus);
 
     return {
       statusCode: 200,
