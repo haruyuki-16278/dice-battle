@@ -47,7 +47,7 @@ export async function handler(
     const scan = await ddbDocClient.send(
       new ScanCommand({
         TableName: tableName,
-        FilterExpression: "roomId = :g",
+        FilterExpression: "id = :g",
         ExpressionAttributeValues: {
           ":g": data.roomId,
         },
