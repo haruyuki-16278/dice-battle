@@ -18,6 +18,14 @@ GitHub Actions を利用して GitHub Pages にデプロイしています。
 
 ### 開発サーバーの起動
 
+https で開発サーバーを起動するため、`localhost.pen` 及び `localhost-key,pem` が必要です。
+以下のコマンドで作成してください。
+
+```sh
+mkcert -install
+mkcert localhost
+```
+
 ```sh
 pnpm dev
 ```

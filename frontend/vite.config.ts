@@ -1,10 +1,17 @@
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
+import fs from "fs";
 
 export default defineConfig({
   base: process.env.GITHUB_PAGES ? "/dice-battle/" : "/",
   build: {
     target: "ESNext",
+  },
+  server: {
+    https: {
+      key: fs.readFileSync("./localhost-key.pem"),
+      cert: fs.readFileSync("./localhost.pem"),
+    },
   },
   plugins: [
     VitePWA({
