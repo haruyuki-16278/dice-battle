@@ -42,6 +42,11 @@ class App {
   dieBuilder = new DieBuilder(this.scene);
   trayBuilder = new TrayBuilder(this.scene);
 
+  // @ts-expect-error: iOS でのみ必要
+  isiOS = typeof DeviceMotionEvent.requestPermission === "function";
+  isDeviceMotionEventGranted =
+    localStorage.getItem("isDeviceMotionEventGranted") === "true";
+
   rerollButton: HTMLButtonElement;
   resultList: HTMLUListElement;
   appendLineToResultList: Function;
@@ -56,6 +61,7 @@ class App {
   collisionTimeout: number | undefined = undefined;
 
   constructor() {
+    this.initUser();
     this.initWorld();
     this.scene.enablePhysics(new Vector3(0, -9.8, 0), this.havokPlugin);
     this.initTray();
@@ -77,6 +83,72 @@ class App {
     this.engine.runRenderLoop(() => {
       this.scene.render();
     });
+  }
+
+  async initUser() {
+    const dialog = document.getElementById("dialog") as HTMLDialogElement;
+
+    const formElem = document.createElement("form");
+    formElem.className = "w-fit h-fit flex flex-col items-center";
+
+    const logoImgElem = document.createElement("img") as HTMLImageElement;
+    logoImgElem.src = "./public/icon.svg";
+    logoImgElem.width = 512;
+    logoImgElem.height = 512;
+
+    const titleElem = document.createElement("h1");
+    titleElem.textContent = "Dice Battle";
+    titleElem.className = "text-5xl font-bold";
+
+    const cancelButton = document.createElement("button");
+    cancelButton.value = "cancel";
+    cancelButton.formMethod = "dialog";
+    cancelButton.textContent = "スタート";
+    cancelButton.className =
+      "mt-4 text-4xl font-bold p-4 border-2 border-gray-500 rounded-full";
+
+    formElem.appendChild(logoImgElem);
+    formElem.appendChild(titleElem);
+    formElem.appendChild(cancelButton);
+    dialog.appendChild(formElem);
+
+    if (this.isiOS && !this.isDeviceMotionEventGranted) {
+      console.log("request motion event permission");
+      const allowDeviceEventButton = document.createElement("button");
+      allowDeviceEventButton.value = "allowDeviceMotion";
+      allowDeviceEventButton.textContent = "デバイスのモーションイベントを許可";
+      allowDeviceEventButton.className =
+        "mt-4 text-4xl font-bold p-4 border-2 border-gray-500 rounded-full";
+      allowDeviceEventButton.addEventListener("click", () => {
+        // @ts-expect-error: iOS でのイベント権限要求
+        DeviceMotionEvent.requestPermission().then((state) => {
+          if (state === "granted") {
+            allowDeviceEventButton.disabled = true;
+            allowDeviceEventButton.textContent = "モーションイベントを許可済み";
+            this.isDeviceMotionEventGranted = true;
+            localStorage.setItem("isDeviceMotionEventGranted", "true");
+          } else {
+            this.isDeviceMotionEventGranted = false;
+            localStorage.removeItem("isDeviceMotionEventGranted");
+          }
+        });
+      });
+      formElem.appendChild(allowDeviceEventButton);
+    }
+
+    dialog.addEventListener("close", (e) => {
+      if (this.isiOS && this.isDeviceMotionEventGranted) {
+        alert(
+          "このゲームで遊ぶにはデバイスのモーションイベントの許可が必要です"
+        );
+        dialog.showModal();
+      }
+      while (dialog.firstChild) {
+        dialog.removeChild(dialog.firstChild);
+      }
+    });
+
+    dialog.showModal();
   }
 
   initWorld() {
