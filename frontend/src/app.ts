@@ -96,9 +96,11 @@ class App {
     logoImgElem.width = 512;
     logoImgElem.height = 512;
 
-    const titleElem = document.createElement("h1");
-    titleElem.textContent = "Dice Battle";
-    titleElem.className = "text-5xl font-bold";
+    const nameInputElem = document.createElement("input") as HTMLInputElement;
+    nameInputElem.placeholder = "ユーザー名";
+    nameInputElem.value = localStorage.getItem("username") ?? "";
+    nameInputElem.className =
+      "w-full mt-4 p-4 border-2 border-gray-500 rounded-full text-4xl";
 
     const cancelButton = document.createElement("button");
     cancelButton.value = "cancel";
@@ -108,7 +110,7 @@ class App {
       "mt-4 text-4xl font-bold p-4 border-2 border-gray-500 rounded-full";
 
     formElem.appendChild(logoImgElem);
-    formElem.appendChild(titleElem);
+    formElem.appendChild(nameInputElem);
     formElem.appendChild(cancelButton);
     dialog.appendChild(formElem);
 
@@ -142,6 +144,10 @@ class App {
           "このゲームで遊ぶにはデバイスのモーションイベントの許可が必要です"
         );
         dialog.showModal();
+      }
+      localStorage.setItem("username", nameInputElem.value);
+      if (!localStorage.getItem("userid")) {
+        localStorage.setItem("userid", crypto.randomUUID());
       }
       while (dialog.firstChild) {
         dialog.removeChild(dialog.firstChild);
