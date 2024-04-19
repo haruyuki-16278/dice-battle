@@ -138,7 +138,7 @@ class App {
       formElem.appendChild(allowDeviceEventButton);
     }
 
-    dialog.addEventListener("close", (e) => {
+    dialog.addEventListener("close", () => {
       if (this.isiOS && this.isDeviceMotionEventGranted) {
         alert(
           "このゲームで遊ぶにはデバイスのモーションイベントの許可が必要です"
